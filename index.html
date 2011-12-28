@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Gridder (Grid Calculator)</title>
+	<script type="text/javascript" charset="utf-8" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+	<!--[if !IE]><!-->
+	<script type="text/javascript" charset="utf-8" src="fraction.js"></script>
+	<script type="text/javascript" charset="utf-8">
+		$(document).ready(function(){
+			var output = document.getElementById("canvas");
+			var inputs = { 
+				side_a: $('input#side_a')
+				, side_b: $('input#side_b')
+				, column_count: $('input#column_count')
+				, gutter: $('input#gutter')
+				, min_margin: $('input#min_margin')
+			}
+			
+			$('form#calculator input').keyup(function(){
+				redraw(output, inputs);
+			});
+			$('#calculator input').mouseup(function(){
+				redraw(output, inputs);
+			});
+			$(window).resize(function() {
+				redraw(output, inputs);
+			});
+			
+			redraw(output, inputs);
+		});
+		
+		
+		function redraw(out, ins) {
+			var window_width  = parseInt($(window).width());
+			var window_height = parseInt($(window).height());
+			var center_spacing = 20;
+			var side_a  = parseInt(ins.side_a.val());
+			var side_b = parseInt(ins.side_b.val());
+			var column_count  = parseInt(ins.column_count.val());
+			if (column_count==0) column_count = 1;
+			var gutter        = parseInt(ins.gutter.val());
+			var min_margin    = parseInt(ins.min_margin.val());
+			var padding       = 4;
+			var col;
+			
+			var context = out.getContext("2d");
+			context.font = "bold 10px sans-serif";
+			out.width = window_width;
+			out.height = window_height;
+			
+			context.translate((window_width-side_a-side_b-center_spacing)/2,(window_height-Math.max(side_a, side_b))/2);
+			// draw screen
+			context.fillStyle = "rgba(0,0,0,0.25)";
+			context.fillRect(0, 0, side_a, side_b);
+			// dimensions label
+			draw_horizontal_dimension(context, 0, -padding, side_a, -padding);
+			draw_label(context, side_a + "px", side_a/2, -padding, "#000", "center", "bottom"); // side_a
+			
+			// draw columns
+			var column_width = Math.floor((side_a - min_margin*2 - gutter * (column_count-1))/column_count);
+			var margin = Math.floor((side_a - column_count * column_width - (column_count-1) * gutter)/2);
+			var running_x = margin;
+			for (var i=0; i<column_count; i++) {
+				context.fillStyle = (i%2==0) ? "rgba(0,0,0,0.25)" : "rgba(0,0,0,0.15)";
+				context.fillRect(running_x, 0, column_width, side_b);
+				running_x += column_width + gutter;
+			}
+			
+			draw_horizontal_dimension(context, 0, side_b+padding, margin, side_b+padding);
+			draw_label(context, margin, margin/2, side_b+padding, "#000", "center", "top"); // margin
+			draw_horizontal_dimension(context, margin, side_b+padding, margin+column_width, side_b+padding);
+			draw_label(context, column_width, margin+column_width/2, side_b+padding, "#000", "center", "top"); // column_width
+			draw_label(context, gutter, margin+column_width+gutter/2, side_b+padding, "#000", "center", "top"); // gutter
+			draw_horizontal_dimension(context, running_x-gutter, side_b+padding, side_a, side_b+padding);
+			col = (side_a-running_x+gutter==margin) ? "#000" : "#F00";
+			draw_label(context, side_a-running_x+gutter, side_a-margin/2, side_b+padding, col, "center", "top"); // remaining margin
+			
+			
+			
+			
+			// draw other orientation
+			context.translate(side_a+center_spacing, 0);
+			context.fillStyle = "rgba(0,0,0,0.25)";
+			context.fillRect( 0, 0, side_b, side_a);
+			draw_horizontal_dimension(context, 0, -padding, side_b, -padding);
+			draw_label(context, side_b + "px", side_b/2, -padding, "#000", "center", "bottom"); // side_a
+			var landscape_column_count = Math.floor(side_b / (column_width + gutter));
+			var landscape_margin = Math.floor((side_b - landscape_column_count * column_width - (landscape_column_count-1) * gutter)/2);
+			var running_x = landscape_margin;
+			for (var i=0; i<landscape_column_count; i++) {
+				context.fillStyle = (i%2==0) ? "rgba(0,0,0,0.25)" : "rgba(0,0,0,0.15)";
+				context.fillRect(running_x, 0, column_width, side_a);
+				running_x += column_width + gutter;
+			}
+			
+			col = (landscape_column_count%2==0) ? "#000" : "#F00";
+			draw_label(context, landscape_column_count+" columns", side_b/2, side_a+padding, col, "center", "top"); // column_count
+			draw_horizontal_dimension(context, 0, side_a+padding, landscape_margin, side_a+padding);
+			draw_label(context, landscape_margin, landscape_margin/2, side_a+padding, "#000", "center", "top"); // landscape_margin
+			draw_horizontal_dimension(context, running_x-gutter, side_a+padding, side_b, side_a+padding);
+			col = (side_b-running_x+gutter==landscape_margin) ? "#000" : "#F00";
+			draw_label(context, side_b-running_x+gutter, side_b-landscape_margin/2, side_a+padding, col, "center", "top"); // remaining margin
+		}
+		
+		function draw_horizontal_dimension(context, ax, ay, bx, by) {
+			context.translate(0.5,0.5);
+			context.moveTo(ax, ay);
+			context.lineTo(bx, by);
+			context.moveTo(ax, ay+1);
+			context.lineTo(ax, ay-1);
+			context.moveTo(bx, by+1);
+			context.lineTo(bx, by-1);
+			context.stroke();
+			context.translate(-0.5,-0.5);
+		}
+		function draw_label(context, str, x, y, color, halign, valign) {
+			var previous_color = context.fillStyle;
+			context.fillStyle = color;
+			context.textAlign = halign;
+			context.textBaseline = valign;
+			context.fillText(str, x, y);
+			context.fillStyle = previous_color;
+		}
+		
+
+	</script>
+	<style type="text/css" media="screen">
+		html, body {
+			margin: 0;
+			padding: 0;
+			text-align: center;
+		}
+		form {
+			padding: 0.5em;
+			background-color: white;
+			color: gray;
+			font-family: Helvetica, sans-serif;
+		}
+		form input[type=text], form input[type=number] {
+			width: 4em;
+			padding: 0.5em;
+			background-color: white;
+			border: 1px solid #CCC;
+		}
+		#calculator label {
+			font-size: 0.8em;
+			padding: 0.5em 0;
+		}
+		canvas#canvas {
+			position: fixed;
+			top: 0;
+			left: 0;
+			z-index: -1;
+		}
+	</style>
+</head>
+<body>
+	<form id="calculator">
+		<noscript><p style="color:red">This calculator requires javascript. Please enable it in your browser.</p><br></noscript>
+		<!--[if IE]><p style="color:red">Unfortunately this won't work on Internet Explorer, because of a lack of HTML5 support.</p><br><![endif]-->
+		
+		<div class="top">
+			<label for="side_a">Screen dimensions</label>
+			<input type="number" min="100" name="side_a" step="1" value="320" id="side_a" tabindex="1" autofocus>
+			<input type="number" min="100" name="side_b" step="1" value="480" id="side_b" tabindex="1" autofocus>
+			<label for="column_count">Columns</label>
+			<input type="number" min="1" name="column_count" step="1" value="10" id="column_count" tabindex="2">
+			<label for="gutter">Gutter</label>
+			<input type="number" min="0" name="gutter" step="1" value="6" id="gutter" tabindex="3">
+			<label for="min_margin">Minimum margin</label>
+			<input type="number" min="0" name="min_margin" step="1" value="8" id="min_margin" tabindex="4">
+		</div>
+	</form>
+	<canvas id="canvas"></canvas>
+	
+</body>
+</html>
