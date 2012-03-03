@@ -1,6 +1,6 @@
 # Gridder
 
-![](http://www.knittingpixel.com/projects/gridder-screengrab.png)
+![](https://lh3.googleusercontent.com/-O968KmDYRfw/T1GaoRlw2vI/AAAAAAAAC_8/O7p4sqyc3b8/s795/Gridder-grab-2.jpg)
 
 ## Introduction
 
