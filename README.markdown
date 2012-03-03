@@ -1,6 +1,6 @@
 # Gridder
 
-![](https://lh3.googleusercontent.com/-O968KmDYRfw/T1GaoRlw2vI/AAAAAAAAC_8/O7p4sqyc3b8/s795/Gridder-grab-2.jpg)
+![](https://lh3.googleusercontent.com/-DlTPY_IXC-Y/T1GdDKNZVEI/AAAAAAAADAo/x_O48oW1KYA/s640/Gridder-grab-1.png)
 
 ## Introduction
 
